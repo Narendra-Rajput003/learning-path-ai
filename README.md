@@ -1,36 +1,23 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
-## Getting Started
 
-First, run the development server:
+# Create a Learning Path AI to help you learn new things and to achieve your goals
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## What is Learning Path AI?
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Learning Path AI is a powerful tool that helps you create mindmaps of your learning goals and tracks your progress as you learn new things. It's designed to help you achieve your goals by providing you with a clear roadmap to follow, and by tracking your progress along the way.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## How does it work?
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Learning Path AI uses a combination of AI and human expertise to create mindmaps of your learning goals. It then uses this mindmap to track your progress as you learn new things. The AI helps you create a clear roadmap to follow, while the human expertise helps you stay on track and make adjustments as needed.
 
-## Learn More
+## How can I use it?
 
-To learn more about Next.js, take a look at the following resources:
+To use Learning Path AI, you'll need to create a mindmap of your learning goals. This can be done by using the Learning Path AI tool, which is available on the [Learning Path AI website](https://www.learningpathai.com/). Once you've created your mindmap, you can use it to track your progress as you learn new things.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## How can I contribute to Learning Path AI?
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Learning Path AI is an open-source project, and contributions are welcome. If you'd like to contribute to Learning Path AI, you can do so by submitting bug reports, feature requests, or code contributions. You can find more information on how to contribute on the [Learning Path AI website](https://www.learningpathai.com/).
 
-## Deploy on Vercel
+## License
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Learning Path AI is licensed under the MIT License. You can find the full license text in the LICENSE file. 
