@@ -1,5 +1,5 @@
 import { Types, Document, Schema, models, model } from "mongoose";
-import bcrytjs from "bcryptjs";
+import bcryptjs from "bcryptjs";
 
 export interface IUser extends Document {
   name: string;
@@ -10,19 +10,19 @@ export interface IUser extends Document {
   phoneNumber?: string;
   hobbies?: string[];
   socialLinks: {
-    linkedln: string;
+    linkedin: string;
     github: string;
     twitter: string;
   };
   learningPaths: Types.ObjectId[];
   resetPasswordToken?: string;
   resetPasswordExpires?: Date;
-  comparePassword(cantidatePassword: string): Promise<boolean>;
+  comparePassword(candidatePassword: string): Promise<boolean>;
 }
 
 const userSchema = new Schema<IUser>({
   name: {
-    tpye: String,
+    type: String,
     required: [true, "Name is required"],
   },
   email: {
@@ -32,7 +32,7 @@ const userSchema = new Schema<IUser>({
     lowercase: true,
     trim: true,
     match: [
-      /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)$/,
+      /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
       "Invalid email",
     ],
   },
@@ -61,7 +61,7 @@ const userSchema = new Schema<IUser>({
     },
   ],
   socialLinks: {
-    linkedln: {
+    linkedin: {
       type: String,
       default: "",
     },
@@ -86,31 +86,28 @@ const userSchema = new Schema<IUser>({
   },
   resetPasswordExpires: {
     type: Date,
-    default: Date.now,
+    default: null,
   },
-},{timestamps: true});
+}, { timestamps: true });
 
-
-userSchema.pre("save",async function(next){
-   if(!this.isModified("password")){
+userSchema.pre("save", async function (next) {
+  if (!this.isModified("password")) {
     return next();
-   }
-   try {
-    const salt = await bcrytjs.genSalt(10);
-    this.password = await bcrytjs.hash(this.password, salt);
+  }
+  try {
+    const salt = await bcryptjs.genSalt(10);
+    this.password = await bcryptjs.hash(this.password, salt);
     next();
-   } catch (error:any) {
+  } catch (error: any) {
     next(error);
-   }
+  }
 });
 
-userSchema.methods.comparePassword = async function (cantidatePassword:string):Promise<boolean> {
+userSchema.methods.comparePassword = async function (candidatePassword: string): Promise<boolean> {
   try {
-
-    return await bcrytjs.compare(cantidatePassword, this.password);
-    
+    return await bcryptjs.compare(candidatePassword, this.password);
   } catch (error) {
-     
+    console.error("Error comparing passwords:", error);
     return false;
   }
 };
