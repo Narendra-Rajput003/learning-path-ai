@@ -8,7 +8,7 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ApiClient } from "@/lib/api-client";
+// import { ApiClient } from "@/lib/api-client";
 
 export function HeroSection() {
   const { data: session } = useSession();
@@ -17,26 +17,26 @@ export function HeroSection() {
   const [isLoading, setIsLoading] = useState(false);
   const [placeholder, setPlaceholder] = useState("Enter a topic");
 
-  const handleGenerate = async () => {
-    if (!session) {
-      router.push("/signin");
-      return;
-    }
+  // const handleGenerate = async () => {
+  //   if (!session) {
+  //     router.push("/signin");
+  //     return;
+  //   }
 
-    if (!topic) return;
+  //   if (!topic) return;
 
-    try {
-      setIsLoading(true);
-      const apiClient = ApiClient.getInstance();
-      const response = await apiClient.generateLearningPath(topic);
+  //   try {
+  //     setIsLoading(true);
+  //     // const apiClient = ApiClient.getInstance();
+  //     // const response = await apiClient.generateLearningPath(topic);
 
-      if (!response.error) {
-        router.push(`/learning-path/${response.data.id}`);
-      }
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  //     if (!response.error) {
+  //       router.push(`/learning-path/${response.data.id}`);
+  //     }
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
 
   return (
     <section className="relative min-h-[90vh] flex items-center bg-gradient-to-b from-background to-secondary/20">
@@ -67,7 +67,7 @@ export function HeroSection() {
                 <Button
                   size="lg"
                   className="absolute right-1 top-1 bottom-1"
-                  onClick={handleGenerate}
+                  // onClick={handleGenerate}
                   disabled={isLoading || !topic}
                 >
                   {isLoading ? "Generating..." : "Generate"}
