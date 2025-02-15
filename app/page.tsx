@@ -4,6 +4,7 @@ import Hero from "@/components/_components/home_page_components/hero-section";
 import Navbar from "@/components/_components/home_page_components/navbar";
 import { SparklesCore } from "@/components/_components/home_page_components/sparkles";
 import { TestimonialsSection } from "@/components/_components/home_page_components/testimonials-section";
+import { Footer } from '@/components/_components/home_page_components/footer';
 
 export default function Home() {
   return (
@@ -27,7 +28,7 @@ export default function Home() {
       <FeaturesSection/>
       <TestimonialsSection/>
       <CTASection/>
-      
+      <Footer/>
     </div>
   </main>
   );

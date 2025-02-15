@@ -1,24 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { z } from 'zod';
 import { User } from '@/lib/db/models/user.model';
 import connectDB from '@/lib/db/connect';
+import { Profile } from '@/lib/db/models/profile.model';
+import imagekit from '@/lib/imagekit';
 
-const updateProfileSchema = z.object({
-  name: z.string().min(2, 'Name must be at least 2 characters').optional(),
-  bio: z.string().max(500, 'Bio cannot be more than 500 characters').optional(),
-  phoneNumber: z.string().regex(/^[+]*[(]{0,1}[0-9]{1,4}[)]{0,1}[-\s\./0-9]*$/, 'Invalid phone number').optional(),
-  hobbies: z.array(z.string()).optional(),
-  website: z.string().url('Invalid website URL').optional(),
-  socialLinks: z.object({
-    linkedin: z.string().url('Invalid LinkedIn URL').optional(),
-    github: z.string().url('Invalid GitHub URL').optional(),
-    twitter: z.string().url('Invalid Twitter URL').optional()
-  }).optional(),
-  avatar: z.string().url('Invalid avatar URL').optional()
-});
-
-export async function GET(req: NextRequest) {
+export async function PUT(req: NextRequest) {
   try {
     const session = await getServerSession();
     if (!session?.user) {
@@ -30,27 +17,59 @@ export async function GET(req: NextRequest) {
 
     await connectDB();
 
-    const user = await User.findById(session.user.id)
-      .select('-password')
-      .populate('learningPaths');
+    // Extract the updated fields from the request body
+    const { dateOfBirth, about, contactNumber, gender } = await req.json();
 
-    if (!user) {
+    // Find the user and their profile
+    const userDetails = await User.findById(session.user.id);
+    if (!userDetails) {
       return NextResponse.json(
         { error: 'User not found' },
         { status: 404 }
       );
     }
 
-    return NextResponse.json({ user });
+    const profile = await Profile.findById(userDetails.additionalDetails);
+    if (!profile) {
+      return NextResponse.json(
+        { error: 'Profile not found' },
+        { status: 404 }
+      );
+    }
+
+    // Update the profile fields
+    profile.dateOfBirth = dateOfBirth;
+    profile.about = about;
+    profile.contactNumber = contactNumber;
+    profile.gender = gender;
+
+    // Save the updated profile
+    await profile.save();
+
+    // Fetch the updated user details with the populated profile
+    const updatedUserDetails = await User.findById(session.user.id)
+      .populate("additionalDetails")
+      .exec();
+
+    return NextResponse.json({
+      success: true,
+      message: "Profile updated successfully",
+      updatedUserDetails,
+    });
+
   } catch (error) {
+    console.log(error);
     return NextResponse.json(
-      { error: 'Failed to fetch user profile' },
+      {
+        error: "Error in updating profile"
+      },
       { status: 500 }
     );
   }
 }
 
-export async function PUT(req: Request) {
+
+export async function DELETE(req: NextRequest) {
   try {
     const session = await getServerSession();
     if (!session?.user) {
@@ -62,37 +81,82 @@ export async function PUT(req: Request) {
 
     await connectDB();
 
-    const body = await req.json();
-    const validatedData = updateProfileSchema.parse(body);
+    // Find the user and their profile
 
-    const user = await User.findByIdAndUpdate(
-      session.user.id,
-      { $set: validatedData },
-      { new: true, runValidators: true }
-    ).select('-password');
+    const userDetails = await User.findById(session.user.id);
+    const profile = await Profile.findById(userDetails.additionalDetails);
 
-    if (!user) {
+    if (!profile) {
       return NextResponse.json(
-        { error: 'User not found' },
+        { error: 'Profile not found' },
         { status: 404 }
+      )
+    }
+
+    // Delete the profile
+    await profile.deleteOne();
+
+    // Delete the user
+    await userDetails.deleteOne();
+
+    return NextResponse.json({
+      success: true,
+      message: "Profile deleted successfully",
+    })
+  }catch(error){
+    console.log(error);
+    return NextResponse.json(
+      {
+        error: "Error in deleting profile"
+      },
+      { status: 500 }
+    );
+  }
+}
+
+export async function updateImage(req:NextRequest){
+  try {
+
+    const session = await getServerSession();
+    if (!session?.user) {
+      return NextResponse.json(
+        { error: 'Not authenticated' },
+        { status: 401 }
       );
     }
 
-    return NextResponse.json({
-      message: 'Profile updated successfully',
-      user
-    });
-  } catch (error) {
-    if (error instanceof z.ZodError) {
+    const file = await req.formData();
+    const image = file.get('image');
+    const fileName = (image as File)?.name || 'default.jpg';
+    const folder = 'general';
+
+    if (!image) {
       return NextResponse.json(
-        { error: error.errors },
+        { error: 'No image file provided' },
         { status: 400 }
       );
     }
 
+    const uploadResponse = await imagekit.upload({
+      file: image as any,
+      fileName,
+      folder,
+      useUniqueFileName: true,
+    });
+
+    return NextResponse.json({
+      url: uploadResponse.url,
+      fileId: uploadResponse.fileId,
+    });
+    
+  } catch (error) {
+    console.log(error);
     return NextResponse.json(
-      { error: 'Failed to update profile' },
+      {
+        error: "Error in updating profile"
+      },
       { status: 500 }
     );
+    
   }
 }

@@ -6,17 +6,10 @@ export interface IUser extends Document {
   email: string;
   password: string;
   avatar: string;
-  bio: string;
-  phoneNumber?: string;
-  hobbies?: string[];
-  socialLinks: {
-    linkedin: string;
-    github: string;
-    twitter: string;
-  };
-  learningPaths: Types.ObjectId[];
   resetPasswordToken?: string;
   resetPasswordExpires?: Date;
+  additionalDetails: Types.ObjectId;
+  
   comparePassword(candidatePassword: string): Promise<boolean>;
 }
 
@@ -36,6 +29,11 @@ const userSchema = new Schema<IUser>({
       "Invalid email",
     ],
   },
+  additionalDetails: {
+    type:Schema.Types.ObjectId,
+    required: true,
+    ref: "Profile",
+  },
   avatar: {
     type: String,
     default: "",
@@ -46,40 +44,6 @@ const userSchema = new Schema<IUser>({
     minlength: [6, "Password must be at least 6 characters long"],
     maxlength: [128, "Password must be less than 128 characters long"],
   },
-  bio: {
-    type: String,
-    default: "",
-  },
-  phoneNumber: {
-    type: String,
-    match: [/^\d{10}$/, "Invalid phone number"],
-  },
-  hobbies: [
-    {
-      type: String,
-      default: "",
-    },
-  ],
-  socialLinks: {
-    linkedin: {
-      type: String,
-      default: "",
-    },
-    github: {
-      type: String,
-      default: "",
-    },
-    twitter: {
-      type: String,
-      default: "",
-    },
-  },
-  learningPaths: [
-    {
-      type: Schema.Types.ObjectId,
-      ref: "LearningPath",
-    },
-  ],
   resetPasswordToken: {
     type: String,
     default: "",

@@ -4,6 +4,8 @@ import { z } from "zod";
 import crypto from "crypto";
 import { User } from "@/lib/db/models/user.model";
 import bcrypt from "bcryptjs";
+
+// Define the schema for validating the reset password request
 const resetPasswordSchema = z
   .object({
     token: z.string(),
@@ -11,8 +13,8 @@ const resetPasswordSchema = z
     confirmPassword: z.string(),
   })
   .refine((data) => data.password === data.confirmPassword, {
-    message: "Password do not match",
-    path: ["confirmPassworf"],
+    message: "Passwords do not match",
+    path: ["confirmPassword"], // Corrected the typo here
   });
 
 export async function POST(req: NextRequest) {
@@ -49,6 +51,7 @@ export async function POST(req: NextRequest) {
     user.resetPasswordToken = undefined;
     user.resetPasswordExpires = undefined;
     await user.save();
+
     return NextResponse.json(
       { message: "Password reset successful" },
       { status: 200 }

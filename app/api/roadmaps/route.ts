@@ -151,7 +151,7 @@ Example for ${body.title} = "Machine Learning":
   - "Unsupervised Learning" -> "Clustering"
   - "Unsupervised Learning" -> "Dimensionality Reduction"
         
-        `
+        `;
 
         const result = await model.generateContent(prompt);
         const response =  result.response;

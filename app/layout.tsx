@@ -3,8 +3,6 @@ import type { Metadata } from 'next';
 import {Inter} from 'next/font/google';
 import { ThemeProvider } from '@/components/_components/theme-provider';
 import {Providers} from "./providers"
-import { Navbar } from '@/components/_components/home_page_components/navbar';
-import { Footer } from '@/components/_components/home_page_components/footer';
 
 
 const inter = Inter({ subsets: ['latin'] });
@@ -33,11 +31,11 @@ export default function RootLayout({
               enableSystem
               disableTransitionOnChange
             >
-               <Navbar />
+              
                <main >
                   {children}
                </main>
-               <Footer />
+             
                </ThemeProvider>
          </Providers>
       </body>

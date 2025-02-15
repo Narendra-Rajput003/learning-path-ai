@@ -2,16 +2,8 @@ import { NextResponse } from 'next/server';
 import { User } from '@/lib/db/models/user.model';
 import connectDB from '@/lib/db/connect';
 import { z } from 'zod';
-
-const signupSchema = z.object({
-  name: z.string().min(2, 'Name must be at least 2 characters'),
-  email: z.string().email('Invalid email address'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
-  confirmPassword: z.string()
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords don't match",
-  path: ["confirmPassword"],
-});
+import { Profile } from '@/lib/db/models/profile.model';
+import { signupSchema } from '@/lib/db/schema/user.schema';
 
 export async function POST(req: Request) {
   try {
@@ -29,11 +21,21 @@ export async function POST(req: Request) {
       );
     }
 
+
+    const profileDetails = await Profile.create({
+      gender:null,
+      dateOfBirth:null,
+      about:null,
+      ContactNumber:null,
+    })
+
     // Create new user
     const user = await User.create({
       name: validatedData.name,
       email: validatedData.email,
+      additionalDetails:profileDetails._id,
       password: validatedData.password,
+      avatar:`https://api.dicebear.com/5.x/initials/svg?seed=${validatedData.name.charAt(0)}`
     });
 
     

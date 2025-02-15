@@ -5,7 +5,7 @@ import { Review } from '@/lib/db/models/review.model';
 import connectDB from '@/lib/db/connect';
 
 const reviewSchema = z.object({
-  learningPathId: z.string(),
+  learningPathTitle: z.string(),
   rating: z.number().min(1).max(5),
   comment: z.string().min(10, 'Comment must be at least 10 characters long'),
 });
@@ -27,7 +27,7 @@ export async function POST(req: Request) {
 
     const review = await Review.create({
       user: session.user.id,
-      learningPath: validatedData.learningPathId,
+      learningPath: validatedData.learningPathTitle,
       rating: validatedData.rating,
       comment: validatedData.comment
     });

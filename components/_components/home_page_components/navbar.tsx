@@ -4,9 +4,30 @@ import { Button } from "@/components/ui/button"
 import { Bot, Menu } from "lucide-react"
 import { motion } from "framer-motion"
 import Link from "next/link"
-import type React from "react" // Added import for React
+import type React from "react"
+import { signIn } from "next-auth/react"
+import { useRouter } from "next/navigation"
 
 export default function Navbar() {
+  const router = useRouter();
+
+  const handleSignIn = async () => {
+    try {
+      await signIn("credentials", {
+        redirect: true,
+        callbackUrl: "/dashboard", // Redirect after successful sign-in
+      })
+    } catch (error) {
+      console.error("Sign-in failed:", error)
+    }
+  }
+
+  const handleSignUp = () => {
+
+    router.push("/signup")
+
+  }
+
   return (
     <motion.nav
       initial={{ y: -100 }}
@@ -15,21 +36,21 @@ export default function Navbar() {
     >
       <Link href="/" className="flex items-center space-x-2">
         <Bot className="w-8 h-8 text-purple-500" />
-        <span className="text-white font-medium text-xl">ResearchAI</span>
+        <span className="text-white font-medium text-xl">LearningPath AI</span>
       </Link>
 
       <div className="hidden md:flex items-center space-x-8">
         <NavLink href="/features">Features</NavLink>
-        <NavLink href="/how-it-works">How it Works</NavLink>
-        <NavLink href="/examples">Examples</NavLink>
-        <NavLink href="/pricing">Pricing</NavLink>
+        <NavLink href="/how-it-works">Testionomals</NavLink>
+        <NavLink href="/examples">Pricing</NavLink>
+        <NavLink href="/pricing">Contact Us</NavLink>
       </div>
 
       <div className="hidden md:flex items-center space-x-4">
-        <Button variant="ghost" className="text-white hover:text-purple-400">
+        <Button variant="ghost" className="text-white hover:text-purple-400" onClick={handleSignIn}>
           Sign In
         </Button>
-        <Button className="bg-purple-600 hover:bg-purple-700 text-white">Get Started</Button>
+        <Button className="bg-purple-600 hover:bg-purple-700 text-white" onClick={handleSignUp}>Get Started</Button>
       </div>
 
       <Button variant="ghost" size="icon" className="md:hidden text-white">

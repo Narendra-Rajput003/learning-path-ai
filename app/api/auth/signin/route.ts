@@ -3,11 +3,7 @@ import { User } from '@/lib/db/models/user.model';
 import connectDB from '@/lib/db/connect';
 import { z } from 'zod';
 import jwt from 'jsonwebtoken';
-
-const signinSchema = z.object({
-  email: z.string().email('Invalid email address'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
-});
+import { signinSchema } from '@/lib/db/schema/user.schema';
 
 export async function POST(req: Request) {
   try {
