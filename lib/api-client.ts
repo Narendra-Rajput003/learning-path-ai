@@ -153,4 +153,62 @@ export class ApiClient {
     // Add logic to validate token expiration
     return true; // Placeholder
   }
+
+  public async updateProfile(data: any): Promise<ApiResponse> {
+    const response = await this.request('/user/profile', {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+
+    if (response.error) {
+      this.handleError(response.error);
+    } else {
+      toast.success('Profile updated successfully');
+    }
+
+    return response;
+  }
+
+  public async deleteProfile(): Promise<ApiResponse> {
+    const response = await this.request('/user/profile', {
+      method: 'DELETE',
+    });
+
+    if (response.error) {
+      this.handleError(response.error);
+    } else {
+      toast.success('Profile deleted successfully');
+    }
+
+    return response;
+  }
+  public async updateProfileImage(image: File): Promise<ApiResponse> {
+    const response = await this.request('/user/profile/image', {
+      method: 'PUT',
+      body: image,
+    });
+
+    if (response.error) {
+      this.handleError(response.error);
+    } else {
+      toast.success('Profile image updated successfully');
+    }
+
+    return response;
+  }
+
+  public async createRoadmap(title: string): Promise<ApiResponse> {
+    const response = await this.request('/roadmaps', {
+      method: 'POST',
+      body: JSON.stringify({ title }),
+    });
+
+    if (response.error) {
+      this.handleError(response.error);
+    } else {
+      toast.success('Roadmap created successfully');
+    }
+
+    return response;
+  }
 }

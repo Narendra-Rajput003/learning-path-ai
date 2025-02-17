@@ -173,3 +173,25 @@ Example for ${body.title} = "Machine Learning":
     );
     }
 }
+
+export async function GET(req:NextRequest){
+    try {
+        const body = await req.json();
+        const cacheKey = `roadmap:${body.title.toLowerCase()}`;
+        const cachedRoadmap = await redis.get(cacheKey);
+        if(cachedRoadmap){
+            return NextResponse.json(
+                {roadmap:cachedRoadmap},
+            )
+        }
+        return NextResponse.json(
+            {error:"Roadmap not found"},
+            {status:404}
+            )
+    } catch (error) {
+        return NextResponse.json(
+            {error:"Internal server error"},
+            {status:500}
+            )
+    }
+}
