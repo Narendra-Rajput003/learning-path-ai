@@ -1,5 +1,5 @@
 import { Types, Document, Schema, models, model } from "mongoose";
-import bcryptjs from "bcryptjs";
+import bcrypt from "bcryptjs";
 
 export interface IUser extends Document {
   name: string;
@@ -9,8 +9,6 @@ export interface IUser extends Document {
   resetPasswordToken?: string;
   resetPasswordExpires?: Date;
   additionalDetails: Types.ObjectId;
-  
-  comparePassword(candidatePassword: string): Promise<boolean>;
 }
 
 const userSchema = new Schema<IUser>({
@@ -59,8 +57,8 @@ userSchema.pre("save", async function (next) {
     return next();
   }
   try {
-    const salt = await bcryptjs.genSalt(10);
-    this.password = await bcryptjs.hash(this.password, salt);
+    const salt = await bcrypt.genSalt(10);
+    this.password = await bcrypt.hash(this.password, salt);
     next();
   } catch (error: any) {
     next(error);
@@ -69,7 +67,8 @@ userSchema.pre("save", async function (next) {
 
 userSchema.methods.comparePassword = async function (candidatePassword: string): Promise<boolean> {
   try {
-    return await bcryptjs.compare(candidatePassword, this.password);
+    return await bcrypt.compare(candidatePassword, this.password);
+    
   } catch (error) {
     console.error("Error comparing passwords:", error);
     return false;

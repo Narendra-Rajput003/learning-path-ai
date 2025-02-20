@@ -13,7 +13,7 @@ export async function POST(req: Request) {
     const validatedData = signinSchema.parse(body);
 
     // Find user and include password for comparison
-    const user = await User.findOne({ email: validatedData.email }).select('-password');
+    const user = await User.findOne({ email: validatedData.email })
     if (!user) {
       return NextResponse.json(
         { error: 'Invalid credentials' },

@@ -5,6 +5,15 @@ export interface IProfile extends Document {
 	dateOfBirth: string;
 	about: string;
 	contactNumber: number;
+	githubUrl: string;
+	linkedinUrl: string;
+	twitterUrl: string;
+	websiteUrl: string;
+	profileImage: string;
+	location: string;
+	occupation: string;
+	userId: string;
+
 }
 
 

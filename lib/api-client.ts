@@ -108,7 +108,7 @@ export class ApiClient {
       toast.success('Signed in successfully');
     }
 
-    return response;
+    return response.data ? { data: response.data } : { error: response.error };
   }
 
   public async forgotPassword(email: string): Promise<ApiResponse> {

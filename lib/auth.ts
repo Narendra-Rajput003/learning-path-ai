@@ -18,9 +18,9 @@ export const authOptions: AuthOptions = {
 
         await connectDB();
 
-        const user = await User.findOne({email:credentials.email}).select("-password");
+        const user = await User.findOne({email:credentials.email})
         if(!user){
-            throw new Error("No user founf with this email")
+            throw new Error("No user found with this email")
         }
 
         const isValid = await user.comparePassword(credentials.password);

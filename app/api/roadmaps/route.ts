@@ -1,69 +1,79 @@
+import { GoogleGenerativeAI } from "@google/generative-ai";
+import { Redis } from "@upstash/redis";
+import { NextApiRequest } from "next";
+import { getToken } from "next-auth/jwt";
 
-import {GoogleGenerativeAI} from "@google/generative-ai"
-import {Redis} from "@upstash/redis"
-import rateLimit from "express-rate-limit"
-import { getServerSession } from "next-auth";
-import { NextRequest, NextResponse } from "next/server";
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_AI_API_KEY!);
-
-
 const redis = new Redis({
-    url: process.env.UPSTASH_REDIS_URL!,
-    token: process.env.UPSTASH_REDIS_TOKEN!,
-})
+  url: process.env.UPSTASH_REDIS_URL!,
+  token: process.env.UPSTASH_REDIS_TOKEN!,
+});
 
-const limiter = rateLimit({
- windowMs: 15 * 60 * 1000, // 15 minutes
- max: 100, // Limit each IP to 100 requests per `window` (here, per 15 minutes)
-})
+const RATE_LIMIT_WINDOW = 60 * 1000; // 1 minute
+const RATE_LIMIT_MAX_REQUESTS = 10;
 
+async function rateLimit(ip: string) {
+  const key = `rateLimit:${ip}`;
+  const count = await redis.incr(key);
+  if (count > RATE_LIMIT_MAX_REQUESTS) {
+    return false;
+  }
+  await redis.expire(key, RATE_LIMIT_WINDOW / 1000);
+  return true;
+}
 
-export async function POST(req:NextRequest){
-    try {
-        const session = await getServerSession();
-        if(!session?.user){
-        return NextResponse.json(
-            {
-                error:"Not authenticated"
-            },
-            {
-                status:401
-            }
-        )
-        }
+export async function POST(req: Request) {
+  try {
+    // Get the token using next-auth/jwt
+    const token = await getToken({ req: req as unknown as NextApiRequest });
+    
+    if (!token) {
+      return new Response(JSON.stringify({
+        success: false,
+        error: 'Unauthorized'
+      }), { status: 401 });
+    }
 
-        /// rate limiting
+    const forwarded = req.headers.get("x-forwarded-for");
+    const ip = forwarded ? forwarded.split(/, /)[0] : "unknown";
+    
+    if (!(await rateLimit(ip))) {
+      return new Response(JSON.stringify({
+        success: false,
+        error: 'Too many requests'
+      }), { status: 429 });
+    }
 
-        const ip = req.headers.get("x-forwarded-for") || "unknown";
-        const rateLimitResult = await limiter(ip)
+    const body = await req.json();
+    let title = body.title;
 
-        if(!rateLimitResult.success){
-            return NextResponse.json(
-                {error:"Too many requests"},
-                {status:429}
-            )
-        }
-        const body = await req.json();
+    if (!title || typeof title !== "string" || title.length > 100) {
+      return new Response(JSON.stringify({
+        success: false,
+        error: 'Invalid title'
+      }), { status: 400 });
+    }
 
-        //check cache first 
+    title = title.trim();
+    const cacheKey = `roadmap:${title.toLowerCase()}`;
 
-        const cacheKey = `roadmap:${body.title.toLowerCase()}`;
-        const cachedRoadmap = await redis.get(cacheKey);
-        if(cachedRoadmap){
-            return NextResponse.json(
-                {roadmap:cachedRoadmap},
-            )
-        }
+    // Check cache
+    const cachedRoadmap = await redis.get(cacheKey);
+    if (cachedRoadmap) {
+      return new Response(JSON.stringify({
+        success: true,
+        data: typeof cachedRoadmap === "string" ? JSON.parse(cachedRoadmap) : cachedRoadmap
+      }));
+    }
 
-        const model = genAI.getGenerativeModel({
-            model:"gemini-2.0-flash"
-        })
+    // Generate new roadmap
+    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
-        const prompt =`
+    const prompt = `
         
-        Create a detailed and structured learning roadmap for ${body.title} with the following hierarchical structure:
+        Create a detailed and structured learning roadmap for ${title} with the following hierarchical structure:
 
-1. **Main Topics**: Divide the roadmap into high-level main topics that cover the core areas of ${body.title}. Each main topic should represent a significant area of study.
+1. **Main Topics**: Divide the roadmap into high-level main topics that cover the core areas of ${title}. Each main topic should represent a significant area of study.
 
 2. **Sub-Topics**: For each main topic, break it down into sub-topics that represent smaller, more focused areas of learning. These sub-topics should be connected to their respective main topics.
 
@@ -130,7 +140,7 @@ export async function POST(req:NextRequest){
    - Add connections between related sub-topics to show interdependencies.
    - Include real-world projects to make the roadmap practical and actionable.
 
-Example for ${body.title} = "Machine Learning":
+Example for ${title} = "Machine Learning":
 - Main Topic: "Supervised Learning"
   - Sub-Topic: "Linear Regression"
     - Resources: Documentation, Video Tutorials, Articles
@@ -152,46 +162,63 @@ Example for ${body.title} = "Machine Learning":
   - "Unsupervised Learning" -> "Dimensionality Reduction"
         
         `;
+    
+    const result = await model.generateContent(prompt);
+    const responseText = result.response.text();
+    
+    // Clean and parse the response
+    const cleanedResponse = responseText
+      .replace(/```json\n?/g, "")
+      .replace(/```\n?/g, "")
+      .trim();
+    
+    const roadmap = JSON.parse(cleanedResponse);
 
-        const result = await model.generateContent(prompt);
-        const response =  result.response;
-        const roadmap = JSON.parse(response.text());
-
-
-        ///cache the roadmap
-        await redis.set(cacheKey, JSON.stringify(roadmap),{
-            ex:24*60*60,
-        });
-
-        return NextResponse.json({roadmap})
-
-    } catch (error) {
-        console.error('Error generating roadmap:', error);
-     return NextResponse.json(
-      { error: 'Failed to generate roadmap' },
-      { status: 500 }
-    );
+    // Validate the roadmap structure
+    if (!roadmap.mainTopics || !Array.isArray(roadmap.mainTopics) || roadmap.mainTopics.length === 0) {
+      throw new Error('Invalid roadmap structure');
     }
+
+    // Cache the roadmap
+    await redis.set(cacheKey, JSON.stringify(roadmap), {
+      ex: 24 * 60 * 60, // 24 hours
+    });
+
+    return new Response(JSON.stringify({
+      success: true,
+      data: roadmap
+    }));
+
+  } catch (error) {
+    console.error('API Error:', error);
+    return new Response(JSON.stringify({
+      success: false,
+      error: error instanceof Error ? error.message : 'Error generating roadmap'
+    }), { status: 500 });
+  }
 }
 
-export async function GET(req:NextRequest){
-    try {
-        const body = await req.json();
-        const cacheKey = `roadmap:${body.title.toLowerCase()}`;
-        const cachedRoadmap = await redis.get(cacheKey);
-        if(cachedRoadmap){
-            return NextResponse.json(
-                {roadmap:cachedRoadmap},
-            )
-        }
-        return NextResponse.json(
-            {error:"Roadmap not found"},
-            {status:404}
-            )
-    } catch (error) {
-        return NextResponse.json(
-            {error:"Internal server error"},
-            {status:500}
-            )
+export async function GET(req: Request) {
+  try {
+    const body = await req.json();
+    const cacheKey = `roadmap:${body.title.toLowerCase()}`;
+    const cachedRoadmap = await redis.get(cacheKey);
+    
+    if (cachedRoadmap) {
+      return new Response(JSON.stringify({
+        success: true,
+        data: typeof cachedRoadmap === "string" ? JSON.parse(cachedRoadmap) : cachedRoadmap
+      }));
     }
+    
+    return new Response(JSON.stringify({
+      success: false,
+      error: 'Roadmap not found'
+    }), { status: 404 });
+  } catch (error) {
+    return new Response(JSON.stringify({
+      success: false,
+      error: 'Failed to fetch roadmap'
+    }), { status: 500 });
+  }
 }

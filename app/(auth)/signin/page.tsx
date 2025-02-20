@@ -1,9 +1,4 @@
 
-
-
-
-
-
 "use client";
 
 import { useState } from 'react';
@@ -16,8 +11,9 @@ import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { ApiClient } from '@/lib/api-client';
 import { signinSchema } from '@/lib/db/schema/user.schema';
+import { signIn } from 'next-auth/react';
+import { toast } from 'sonner';
 
 type SignInForm = z.infer<typeof signinSchema>;
 
@@ -31,11 +27,16 @@ export default function SignInPage() {
   const onSubmit = async (data: SignInForm) => {
     try {
       setIsLoading(true);
-      const apiClient = ApiClient.getInstance();
-      const response = await apiClient.signIn(data);
-
-      if (!response.error) {
-        router.push('/dashboard');
+      const result = await signIn("credentials", {
+        email: data.email,
+        password: data.password,
+        redirect: false,
+      });
+  
+      if (result?.error) {
+        toast.error(result.error);
+      } else {
+        router.push('/');
       }
     } finally {
       setIsLoading(false);
