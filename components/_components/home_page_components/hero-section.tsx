@@ -6,10 +6,8 @@ import { Sparkles } from "lucide-react"
 import { RoboAnimation } from "@/components/_components/home_page_components/robo-animation"
 import { useState, useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
-import { useSession, signIn } from "next-auth/react"
-
 export default function Hero() {
-  const { data: session, status } = useSession();
+
   const [techStack, setTechStack] = useState("")
   const [placeholder, setPlaceholder] = useState("")
   const [isTyping, setIsTyping] = useState(true)
@@ -73,24 +71,16 @@ export default function Hero() {
     return () => clearTimeout(typingRef.current)
   }, [])
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-
-    const normalizedTechStack = techStack.trim().toLowerCase().replace(/[^a-zA-Z0-9\s]/g, "").replace(/\s+/g, "-")
-
-    if (!normalizedTechStack) {
-      setError("Please enter a valid tech stack.")
-      return
+  const handleSubmit = () => {
+    if (techStack.trim() === "") {
+      setError("Please enter your tech stack")
+    } else {
+      setError("")
+      router.push(`/roadmap/${encodeURIComponent(techStack)}`)
     }
-
-    setError("")
-    router.push(`/roadmap/${normalizedTechStack}`)
   }
 
-  if (status === "loading") {
-    return <div>Loading...</div>
-  }
-
+  
   return (
     <div className="relative min-h-[calc(100vh-76px)] flex items-center">
       <div className="container mx-auto px-6 relative z-10">
@@ -121,7 +111,7 @@ export default function Hero() {
             transition={{ duration: 0.5, delay: 0.4 }}
             className="flex flex-col sm:flex-row items-center justify-center gap-4"
           >
-            <form onSubmit={handleSubmit} className="relative w-full max-w-md" aria-live="polite">
+           
               <input
                 type="text"
                 value={techStack}
@@ -140,7 +130,7 @@ export default function Hero() {
                 ✍️
               </motion.div>
               {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
-            </form>
+           
           </motion.div>
 
           <motion.div

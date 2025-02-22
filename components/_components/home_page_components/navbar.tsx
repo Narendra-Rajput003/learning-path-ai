@@ -5,28 +5,18 @@ import { Bot, Menu } from "lucide-react"
 import { motion } from "framer-motion"
 import Link from "next/link"
 import type React from "react"
-import { signIn } from "next-auth/react"
 import { useRouter } from "next/navigation"
+import { UserButton, useUser } from "@clerk/nextjs"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 export default function Navbar() {
   const router = useRouter();
-
-  const handleSignIn = async () => {
-    try {
-      await signIn("credentials", {
-        redirect: true,
-        callbackUrl: "/dashboard", // Redirect after successful sign-in
-      })
-    } catch (error) {
-      console.error("Sign-in failed:", error)
-    }
-  }
-
-  const handleSignUp = () => {
-
-    router.push("/signup")
-
-  }
+  const { user, isLoaded } = useUser();
 
   return (
     <motion.nav
@@ -41,16 +31,34 @@ export default function Navbar() {
 
       <div className="hidden md:flex items-center space-x-8">
         <NavLink href="/features">Features</NavLink>
-        <NavLink href="/how-it-works">Testionomals</NavLink>
-        <NavLink href="/examples">Pricing</NavLink>
-        <NavLink href="/pricing">Contact Us</NavLink>
+        <NavLink href="/testimonials">Testimonials</NavLink>
+        <NavLink href="/pricing">Pricing</NavLink>
+        <NavLink href="/contact">Contact</NavLink>
       </div>
 
       <div className="hidden md:flex items-center space-x-4">
-        <Button variant="ghost" className="text-white hover:text-purple-400" onClick={handleSignIn}>
-          Sign In
-        </Button>
-        <Button className="bg-purple-600 hover:bg-purple-700 text-white" onClick={handleSignUp}>Get Started</Button>
+        {isLoaded && user ? (
+          <div className="flex items-center space-x-4">
+           
+            <UserButton afterSignOutUrl="/" />
+          </div>
+        ) : (
+          <>
+            <Button 
+              variant="ghost" 
+              className="text-white hover:text-purple-400"
+              onClick={() => router.push("/sign-in")}
+            >
+              Sign In
+            </Button>
+            <Button 
+              className="bg-purple-600 hover:bg-purple-700 text-white"
+              onClick={() => router.push("/sign-up")}
+            >
+              Get Started
+            </Button>
+          </>
+        )}
       </div>
 
       <Button variant="ghost" size="icon" className="md:hidden text-white">
