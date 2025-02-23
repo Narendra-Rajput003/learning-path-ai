@@ -86,7 +86,9 @@ export interface MainTopic {
 }
 
 export interface RoadmapData {
+  id: string;
   title: string;
+  description: string;
   mainTopics: MainTopic[];
   learningPath: {
     beginner: {

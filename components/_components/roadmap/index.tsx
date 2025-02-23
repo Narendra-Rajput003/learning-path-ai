@@ -24,6 +24,9 @@ import jsPDF from 'jspdf';
 import { CalendarDialog } from './calendar-dialog';
 import { RatingPopup } from '../rating/rating-popup';
 import 'reactflow/dist/style.css';
+import { QuizModal } from '../gamification/quiz-modal';
+import { toast } from 'react-toastify';
+import { Brain } from 'lucide-react';
 
 const nodeTypes = {
   custom: CustomNode,
@@ -36,6 +39,8 @@ const RoadmapFlow = ({ roadmap }: { roadmap: RoadmapData }) => {
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [isCalendarOpen, setIsCalendarOpen] = React.useState(false);
   const [showRatingPopup, setShowRatingPopup] = useState(true);
+  const [showQuiz, setShowQuiz] = useState(false);
+  const [quizQuestions, setQuizQuestions] = useState([]);
   const currentTheme = mounted ? theme === 'system' ? systemTheme : theme : 'light';
   const { fitView } = useReactFlow();
   const flowRef = React.useRef(null);
@@ -193,6 +198,19 @@ const RoadmapFlow = ({ roadmap }: { roadmap: RoadmapData }) => {
   const totalNodes = nodes.length;
   const progressPercentage = Math.round((completedNodes / totalNodes) * 100) || 0;
 
+  const handleStartQuiz = async () => {
+    // Generate quiz questions based on roadmap content
+    const questions = generateQuizQuestions(roadmap);
+    setQuizQuestions(questions);
+    setShowQuiz(true);
+  };
+
+  const handleQuizComplete = (score: number) => {
+    setShowQuiz(false);
+    // Handle quiz completion (e.g., save score, show achievements)
+    toast.success(`Quiz completed! Score: ${score}/${quizQuestions.length}`);
+  };
+
   return (
     <div className="flex flex-col gap-8">
       {/* Top Section - Controls and Progress */}
@@ -250,6 +268,25 @@ const RoadmapFlow = ({ roadmap }: { roadmap: RoadmapData }) => {
           onClose={() => setShowRatingPopup(false)}
         />
       )}
+
+      {/* Quiz Button */}
+      <div className="flex justify-end">
+        <Button
+          onClick={handleStartQuiz}
+          className="bg-purple-600 hover:bg-purple-700"
+        >
+          <Brain className="mr-2 h-5 w-5" />
+          Test Your Knowledge
+        </Button>
+      </div>
+
+      {/* Quiz Modal */}
+      {showQuiz && (
+        <QuizModal
+          questions={quizQuestions}
+          onComplete={handleQuizComplete}
+        />
+      )}
     </div>
   );
 };
@@ -267,4 +304,22 @@ export default function Roadmap({ roadmap }: { roadmap: RoadmapData }) {
       </ReactFlowProvider>
     </motion.div>
   );
+}
+
+// Helper function to generate quiz questions
+function generateQuizQuestions(roadmap: RoadmapData) {
+  // Generate questions based on roadmap content
+  const questions = roadmap.mainTopics.map(topic => ({
+    question: `What is the main focus of ${topic.title}?`,
+    options: [
+      topic.description,
+      "Wrong answer 1",
+      "Wrong answer 2",
+      "Wrong answer 3"
+    ],
+    correctAnswer: topic.description,
+    explanation: `${topic.title} focuses on ${topic.description}. This is important because ${topic.industryApplication}.`
+  }));
+
+  return questions;
 }

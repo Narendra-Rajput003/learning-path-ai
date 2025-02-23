@@ -39,8 +39,11 @@ const features = [
 
 export function FeaturesSection() {
   return (
-    <section className="py-24 bg-secondary/50">
-      <div className="container px-4 md:px-6">
+    <section className="py-24 bg-black/[0.96] antialiased bg-grid-white/[0.02] relative overflow-hidden">
+      {/* Radial gradient overlay */}
+      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-purple-500/10 to-transparent" />
+      
+      <div className="container px-4 md:px-6 relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -48,10 +51,10 @@ export function FeaturesSection() {
           transition={{ duration: 0.5 }}
           className="text-center mb-16 space-y-4"
         >
-          <h2 className="text-3xl md:text-4xl font-bold">
+          <h2 className="text-3xl md:text-4xl font-bold text-white">
             Everything You Need to Succeed
           </h2>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-xl text-gray-400 max-w-2xl mx-auto">
             Our platform combines AI technology with proven learning methodologies
             to create the most effective learning experience.
           </p>
@@ -65,12 +68,12 @@ export function FeaturesSection() {
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: index * 0.1 }}
             >
-              <Card className="p-8 h-full hover:shadow-lg transition-all duration-300 bg-gradient-to-br from-card to-card/95">
-                <div className="rounded-full bg-primary/10 w-16 h-16 flex items-center justify-center mb-6 text-primary">
+              <Card className="p-8 h-full bg-black/40 backdrop-blur-sm border border-white/10 hover:border-purple-500/50 transition-all duration-300">
+                <div className="rounded-full bg-purple-500/10 w-16 h-16 flex items-center justify-center mb-6 text-purple-500">
                   {feature.icon}
                 </div>
-                <h3 className="text-xl font-semibold mb-3">{feature.title}</h3>
-                <p className="text-muted-foreground">{feature.description}</p>
+                <h3 className="text-xl font-semibold mb-3 text-white">{feature.title}</h3>
+                <p className="text-gray-400">{feature.description}</p>
               </Card>
             </motion.div>
           ))}

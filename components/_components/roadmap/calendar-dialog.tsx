@@ -8,6 +8,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from 'framer-motion';
 import { Calendar as CalendarIcon, Mail, Globe } from 'lucide-react';
+import { VisuallyHidden } from '@/components/ui/visually-hidden';
 
 interface CalendarDialogProps {
   open: boolean;
@@ -20,7 +21,6 @@ export function CalendarDialog({ open, onOpenChange, roadmapTitle }: CalendarDia
     const title = encodeURIComponent(`Learning: ${roadmapTitle}`);
     const description = encodeURIComponent(`Learning session for ${roadmapTitle} roadmap`);
     
-    // Example links - you'll need to adjust these based on your needs
     return {
       google: `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&details=${description}`,
       outlook: `https://outlook.office.com/calendar/0/deeplink/compose?subject=${title}&body=${description}`,
@@ -35,6 +35,7 @@ export function CalendarDialog({ open, onOpenChange, roadmapTitle }: CalendarDia
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Schedule Learning Time</DialogTitle>
+          <VisuallyHidden>Calendar options for scheduling learning time</VisuallyHidden>
         </DialogHeader>
         <div className="grid gap-4 py-4">
           <AnimatePresence>
