@@ -34,15 +34,18 @@ const footerLinks = {
 
 const socialLinks = [
   { name: "Twitter", icon: Twitter, href: "https://twitter.com" },
-  { name: "LinkedIn", icon: Linkedin, href: "https://linkedin.com" },
-  { name: "GitHub", icon: Github, href: "https://github.com" },
+  { name: "LinkedIn", icon: Linkedin, href: "https://www.linkedin.com/in/jadon-narendrasinh-9aa772243" },
+  { name: "GitHub", icon: Github, href: "https://github.com/Narendra-Rajput003" },
   { name: "Facebook", icon: Facebook, href: "https://facebook.com" },
 ];
 
 export function Footer() {
   return (
-    <footer className="border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container py-12 md:py-16 lg:py-20">
+    <footer className="bg-black/[0.96] antialiased bg-grid-white/[0.02] relative overflow-hidden border-t border-white/10">
+      {/* Radial gradient overlay */}
+      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-purple-500/10 to-transparent" />
+      
+      <div className="container py-12 md:py-16 lg:py-20 relative z-10">
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
@@ -52,98 +55,50 @@ export function Footer() {
             className="lg:col-span-4"
           >
             <Link href="/" className="flex items-center space-x-2">
-              <Brain className="h-8 w-8" />
-              <span className="text-2xl font-bold">LearningPath.ai</span>
+              <Brain className="h-8 w-8 text-purple-500" />
+              <span className="text-2xl font-bold text-white">LearningPath.ai</span>
             </Link>
-            <p className="mt-4 text-muted-foreground">
+            <p className="mt-4 text-gray-400">
               Empowering learners worldwide with AI-driven personalized learning paths.
               Transform your career journey with intelligent guidance.
             </p>
             <div className="mt-6">
-              <h3 className="font-semibold mb-3">Subscribe to our newsletter</h3>
+              <h3 className="font-semibold mb-3 text-white">Subscribe to our newsletter</h3>
               <div className="flex gap-2">
                 <input
                   type="email"
                   placeholder="Enter your email"
-                  className="flex-1 rounded-md border bg-background px-3 py-2 text-sm"
+                  className="flex-1 rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm text-white placeholder:text-gray-400"
                 />
-                <Button>Subscribe</Button>
+                <Button className="bg-purple-600 hover:bg-purple-700 text-white">Subscribe</Button>
               </div>
             </div>
           </motion.div>
 
           <div className="grid grid-cols-2 gap-8 sm:grid-cols-4 lg:col-span-8">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: 0.1 }}
-            >
-              <h3 className="font-semibold mb-3">Product</h3>
-              <ul className="space-y-2">
-                {footerLinks.product.map((link) => (
-                  <li key={link.name}>
-                    <Link href={link.href} className="text-muted-foreground hover:text-foreground transition-colors">
-                      {link.name}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-            >
-              <h3 className="font-semibold mb-3">Company</h3>
-              <ul className="space-y-2">
-                {footerLinks.company.map((link) => (
-                  <li key={link.name}>
-                    <Link href={link.href} className="text-muted-foreground hover:text-foreground transition-colors">
-                      {link.name}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: 0.3 }}
-            >
-              <h3 className="font-semibold mb-3">Resources</h3>
-              <ul className="space-y-2">
-                {footerLinks.resources.map((link) => (
-                  <li key={link.name}>
-                    <Link href={link.href} className="text-muted-foreground hover:text-foreground transition-colors">
-                      {link.name}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: 0.4 }}
-            >
-              <h3 className="font-semibold mb-3">Legal</h3>
-              <ul className="space-y-2">
-                {footerLinks.legal.map((link) => (
-                  <li key={link.name}>
-                    <Link href={link.href} className="text-muted-foreground hover:text-foreground transition-colors">
-                      {link.name}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </motion.div>
+            {Object.entries(footerLinks).map(([category, links], index) => (
+              <motion.div
+                key={category}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: 0.1 * (index + 1) }}
+              >
+                <h3 className="font-semibold mb-3 text-white capitalize">{category}</h3>
+                <ul className="space-y-2">
+                  {links.map((link) => (
+                    <li key={link.name}>
+                      <Link 
+                        href={link.href} 
+                        className="text-gray-400 hover:text-purple-400 transition-colors"
+                      >
+                        {link.name}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </motion.div>
+            ))}
           </div>
         </div>
 
@@ -152,10 +107,10 @@ export function Footer() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5, delay: 0.5 }}
-          className="mt-12 pt-8 border-t"
+          className="mt-12 pt-8 border-t border-white/10"
         >
           <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-gray-400">
               © {new Date().getFullYear()} LearningPath.ai. All rights reserved.
             </p>
             <div className="flex space-x-4">
@@ -165,7 +120,7 @@ export function Footer() {
                   <Link
                     key={social.name}
                     href={social.href}
-                    className="text-muted-foreground hover:text-foreground transition-colors"
+                    className="text-gray-400 hover:text-purple-400 transition-colors"
                     target="_blank"
                     rel="noopener noreferrer"
                   >
