@@ -1,12 +1,14 @@
 import { NextResponse } from 'next/server';
-import  {useUser} from "@clerk/nextjs";
+import { auth, currentUser } from "@clerk/nextjs/server";
 import { Review } from '@/lib/db/models/review.model';
 import connectDB from '@/lib/db/connect';
 
 export async function POST(req: Request) {
   try {
-    const { user} = useUser();
-    if (!user) {
+    const { userId } = await auth();
+    const user = await currentUser();
+    
+    if (!userId || !user) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
@@ -14,16 +16,28 @@ export async function POST(req: Request) {
     }
 
     await connectDB();
-    const { rating, comment } = await req.json();
+    const { rating, comment, roadmapTitle } = await req.json();
 
+    // Validate rating
+    if (!rating || rating < 1 || rating > 5) {
+      return NextResponse.json(
+        { error: 'Rating must be between 1 and 5' },
+        { status: 400 }
+      );
+    }
+
+    // Create review with user details from Clerk
     const review = await Review.create({
-      user: user.id,
+      user: userId,
+      userName: user.firstName && user.lastName 
+        ? `${user.firstName} ${user.lastName}`
+        : user.username || 'Anonymous',
+      userImage: user.imageUrl || '',
       rating,
       comment,
+      roadmapTitle,
       createdAt: new Date(),
     });
-
-    await review.populate('user', 'name image');
 
     return NextResponse.json({
       success: true,
@@ -44,19 +58,45 @@ export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '6');
+    const roadmapTitle = searchParams.get('roadmapTitle');
     const skip = (page - 1) * limit;
 
-    const reviews = await Review.find()
+    // Build query
+    const query = roadmapTitle ? { roadmapTitle } : {};
+
+    const reviews = await Review.find(query)
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
-      .populate('user', 'name image');
+      .select('rating comment userName userImage roadmapTitle createdAt');
 
-    const total = await Review.countDocuments();
+    const total = await Review.countDocuments(query);
+
+    // Calculate average rating if roadmapTitle is provided
+    let averageRating = null;
+    if (roadmapTitle) {
+      const ratingStats = await Review.aggregate([
+        { $match: { roadmapTitle } },
+        { 
+          $group: {
+            _id: null,
+            average: { $avg: '$rating' },
+            count: { $sum: 1 }
+          }
+        }
+      ]);
+      if (ratingStats.length > 0) {
+        averageRating = {
+          average: Math.round(ratingStats[0].average * 10) / 10,
+          count: ratingStats[0].count
+        };
+      }
+    }
 
     return NextResponse.json({
       success: true,
       data: reviews,
+      averageRating,
       pagination: {
         current: page,
         total: Math.ceil(total / limit),
