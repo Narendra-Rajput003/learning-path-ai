@@ -1,83 +1,41 @@
 "use client";
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { motion, useAnimationFrame } from 'framer-motion';
 import { Star } from 'lucide-react';
 import { Card } from "@/components/ui/card";
-
-const FAKE_REVIEWS = [
-  {
-    id: '1',
-    user: {
-      name: 'John Doe',
-      image: 'https://api.dicebear.com/7.x/avataaars/svg?seed=John',
-    },
-    rating: 5,
-    comment: 'The React Developer roadmap was incredibly helpful! The AI-generated path helped me structure my learning journey.',
-    roadmapTitle: 'React Developer',
-    
-  },
-  {
-    id: '2',
-    user: {
-      name: 'Sarah Smith',
-      image: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah',
-    },
-    rating: 4,
-    comment: 'Great resource for learning Python! The step-by-step approach made it easy to follow.',
-    roadmapTitle: 'Python Developer',
-   
-  },
-  {
-    id: '3',
-    user: {
-      name: 'Michael Brown',
-      image: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Michael',
-    },
-    rating: 5,
-    comment: 'The AI-generated roadmap for JavaScript was spot on! It saved me a lot of time and effort.',
-    roadmapTitle: 'JavaScript Developer',
-   
-  },
-  {
-    id: '4',
-    user: {
-      name: 'Emily Johnson',
-      image: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Emily',
-    },
-    rating: 4,
-    comment: 'The AI-generated roadmap for Java was very useful. It provided a clear path for me to follow.',
-    roadmapTitle: 'Java Developer',
-  },
-  {
-    id: '5',
-    user: {
-      name: 'David Lee',
-      image: 'https://api.dicebear.com/7.x/avataaars/svg?seed=David',
-    },
-    rating: 5,
-    comment: 'The AI-generated roadmap for Ruby on Rails was exactly what I needed. It made learning Rails much easier.',
-    roadmapTitle: 'Ruby on Rails Developer',
-  },
-  {
-    id: '6',
-    user: {
-      name: 'Olivia White',
-      image: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Olivia',
-    },
-    rating: 4,
-    comment: 'The AI-generated roadmap for PHP was very helpful. It provided a clear path for me to follow.',
-    roadmapTitle: 'PHP Developer',
-  }
-];
-
-// Duplicate reviews to create seamless loop
-const DUPLICATED_REVIEWS = [...FAKE_REVIEWS, ...FAKE_REVIEWS];
+import { reviewsApi, Review } from '@/lib/api/reviews';
+import { useToast } from '@/hooks/use-toast';
 
 export function TestimonialsSection() {
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const { toast } = useToast();
   const containerRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef(0);
   const speedRef = useRef(0.5); // Controls scroll speed
+
+  useEffect(() => {
+    const fetchReviews = async () => {
+      try {
+        setIsLoading(true);
+        const response = await reviewsApi.getAll({ limit: 10 });
+        if (response.success) {
+          setReviews([...response.data, ...response.data]); // Duplicate for infinite scroll
+        }
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: "Failed to load testimonials",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchReviews();
+  }, [toast]);
 
   useAnimationFrame((time) => {
     if (!containerRef.current) return;
@@ -135,7 +93,7 @@ export function TestimonialsSection() {
           className="overflow-hidden relative"
         >
           <div className="flex gap-6 whitespace-nowrap">
-            {DUPLICATED_REVIEWS.map((review, index) => (
+            {reviews.map((review, index) => (
               <div
                 key={`${review.id}-${index}`}
                 className="w-[350px] min-w-[350px] md:w-[400px] md:min-w-[400px]"
