@@ -4,16 +4,75 @@ import { useEffect, useRef, useState } from 'react';
 import { motion, useAnimationFrame } from 'framer-motion';
 import { Star } from 'lucide-react';
 import { Card } from "@/components/ui/card";
-import { useToast } from '@/hooks/use-toast';
 
-interface Review {
-  _id: string;
-  userName: string;
-  userImage: string;
-  rating: number;
-  comment: string;
-  createdAt: string;
-}
+const FAKE_REVIEWS = [
+  {
+    id: '1',
+    user: {
+      name: 'John Doe',
+      image: 'https://api.dicebear.com/7.x/avataaars/svg?seed=John',
+    },
+    rating: 5,
+    comment: 'The React Developer roadmap was incredibly helpful! The AI-generated path helped me structure my learning journey.',
+    roadmapTitle: 'React Developer',
+    
+  },
+  {
+    id: '2',
+    user: {
+      name: 'Sarah Smith',
+      image: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah',
+    },
+    rating: 4,
+    comment: 'Great resource for learning Python! The step-by-step approach made it easy to follow.',
+    roadmapTitle: 'Python Developer',
+   
+  },
+  {
+    id: '3',
+    user: {
+      name: 'Michael Brown',
+      image: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Michael',
+    },
+    rating: 5,
+    comment: 'The AI-generated roadmap for JavaScript was spot on! It saved me a lot of time and effort.',
+    roadmapTitle: 'JavaScript Developer',
+   
+  },
+  {
+    id: '4',
+    user: {
+      name: 'Emily Johnson',
+      image: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Emily',
+    },
+    rating: 4,
+    comment: 'The AI-generated roadmap for Java was very useful. It provided a clear path for me to follow.',
+    roadmapTitle: 'Java Developer',
+  },
+  {
+    id: '5',
+    user: {
+      name: 'David Lee',
+      image: 'https://api.dicebear.com/7.x/avataaars/svg?seed=David',
+    },
+    rating: 5,
+    comment: 'The AI-generated roadmap for Ruby on Rails was exactly what I needed. It made learning Rails much easier.',
+    roadmapTitle: 'Ruby on Rails Developer',
+  },
+  {
+    id: '6',
+    user: {
+      name: 'Olivia White',
+      image: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Olivia',
+    },
+    rating: 4,
+    comment: 'The AI-generated roadmap for PHP was very helpful. It provided a clear path for me to follow.',
+    roadmapTitle: 'PHP Developer',
+  }
+];
+
+// Duplicate reviews to create seamless loop
+const DUPLICATED_REVIEWS = [...FAKE_REVIEWS, ...FAKE_REVIEWS];
 
 export function TestimonialsSection() {
   const [reviews, setReviews] = useState<Review[]>([]);
@@ -21,32 +80,7 @@ export function TestimonialsSection() {
   const { toast } = useToast();
   const containerRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef(0);
-  const speedRef = useRef(0.5);
-
-  useEffect(() => {
-    const fetchReviews = async () => {
-      try {
-        setIsLoading(true);
-        const response = await fetch('/api/reviews?limit=10');
-        const data = await response.json();
-        
-        if (data.success) {
-          // Don't duplicate the reviews
-          setReviews(data.data);
-        }
-      } catch (error) {
-        toast({
-          title: "Error",
-          description: "Failed to load testimonials",
-          variant: "destructive",
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchReviews();
-  }, [toast]);
+  const speedRef = useRef(0.5); // Controls scroll speed
 
   useAnimationFrame(() => {
     if (!containerRef.current || reviews.length === 0) return;
@@ -97,37 +131,8 @@ export function TestimonialsSection() {
           onMouseLeave={handleMouseLeave}
           className="overflow-hidden relative"
         >
-          <div className="flex gap-6">
-            {reviews.map((review, index) => (
-              <div
-                key={`${review._id}-${index}`}
-                className="w-[350px] min-w-[350px] md:w-[400px] md:min-w-[400px]"
-              >
-                <Card className="p-6 h-full bg-black/40 backdrop-blur-sm border border-white/10 hover:border-purple-500/50 transition-all duration-300">
-                  <div className="flex items-center mb-4">
-                    <img
-                      src={review.userImage}
-                      alt={review.userName}
-                      className="w-12 h-12 rounded-full mr-4"
-                    />
-                    <div>
-                      <h3 className="font-semibold text-white">{review.userName}</h3>
-                    </div>
-                  </div>
-                  <div className="flex mb-4">
-                    {Array.from({ length: review.rating }).map((_, i) => (
-                      <Star
-                        key={i}
-                        className="w-5 h-5 text-yellow-500 fill-yellow-500"
-                      />
-                    ))}
-                  </div>
-                  <p className="text-gray-300 line-clamp-4">{review.comment}</p>
-                </Card>
-              </div>
-            ))}
-            {/* Second set of reviews for smooth infinite scroll */}
-            {reviews.map((review, index) => (
+          <div className="flex gap-6 whitespace-nowrap">
+            {DUPLICATED_REVIEWS.map((review, index) => (
               <div
                 key={`${review._id}-clone-${index}`}
                 className="w-[350px] min-w-[350px] md:w-[400px] md:min-w-[400px]"
