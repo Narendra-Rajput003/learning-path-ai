@@ -124,7 +124,8 @@ export const SparklesCore = ({
       init()
     }
 
-    window.addEventListener("resize", handleResize)
+    window.addEventListener("resize", handleResize);
+
 
     return () => {
       window.removeEventListener("resize", handleResize)
@@ -137,6 +138,7 @@ export const SparklesCore = ({
       ref={canvasRef}
       id={id}
       className={className}
+
       style={{
         background,
         width: dimensions.width,

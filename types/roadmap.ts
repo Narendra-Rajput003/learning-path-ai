@@ -10,13 +10,22 @@ export interface Project {
   id: string;
   title: string;
   description: string;
-  difficulty: 'beginner' | 'intermediate' | 'advanced';
+  difficulty: string;
+  skillLevel: 'Beginner' | 'Intermediate' | 'Advanced';
+  estimatedHours: number;
   timeEstimate: string;
-  skills: string[];
+  challengeLevel: 1 | 2 | 3 | 4 | 5;
   prerequisites: string[];
+  learningOutcomes: string[];
   steps: string[];
-  resources: Resource[];
   expectedOutcome: string;
+  bestPractices: string[];
+  tags: string[];
+  resources: {
+    documentation: Array<{ title: string; url: string }>;
+    tutorials: Array<{ title: string; url: string }>;
+    githubRepos: Array<{ title: string; url: string }>;
+  };
 }
 
 export interface PracticalExercise {
@@ -108,4 +117,41 @@ export interface RoadmapData {
     };
   };
   projects: Project[];
+  nodes: {
+    id: string;
+    title: string;
+    description: string;
+    type: 'fundamental' | 'beginner' | 'intermediate' | 'advanced';
+    position: { x: number; y: number };
+  }[];
+  edges: {
+    id: string;
+    source: string;
+    target: string;
+  }[];
+}
+
+export interface RoadmapNode {
+  id: string;
+  type: 'fundamental' | 'beginner' | 'intermediate' | 'advanced' | 'project';
+  position: { x: number; y: number };
+  data: {
+    title: string;
+    description: string;
+    keyConcepts?: string[];
+    resources?: {
+      documentation: Resource[];
+      githubRepos: Resource[];
+      articles: Resource[];
+    };
+    projects?: Project[];
+  };
+}
+
+export interface RoadmapEdge {
+  id: string;
+  source: string;
+  target: string;
+  type?: 'default' | 'prerequisite';
+  animated?: boolean;
 }

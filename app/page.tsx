@@ -2,13 +2,16 @@ import { Suspense } from 'react';
 import { FeaturesSection } from "@/components/_components/home_page_components/features-section";
 import { Footer } from '@/components/_components/home_page_components/footer';
 import { SparklesCore } from "@/components/_components/home_page_components/sparkles";
-import ClientWrapper from '@/components/_components/client-wrapper';
 import { PopularPaths } from '@/components/_components/home_page_components/popular-paths';
 import { TestimonialsSection } from '@/components/_components/home_page_components/testimonials-section';
 import ContactSection from '@/components/_components/home_page_components/contact-section';
+import Navbar from '@/components/_components/home_page_components/navbar';
+import Hero from '@/components/_components/home_page_components/hero-section';
+
 export default function Home() {
   return (
-    <main className="bg-black/[0.96] antialiased bg-grid-white/[0.02] relative overflow-hidden">
+    <main className="bg-black/[0.96] antialiased bg-grid-white/[0.02] relative 
+    overflow-hidden">
       {/* Ambient background with moving particles */}
       <div className="fixed inset-0 z-0">
         <SparklesCore
@@ -23,7 +26,8 @@ export default function Home() {
       </div>
 
       <div className="relative z-10">
-        <ClientWrapper />
+        <Navbar />
+        <Hero />
 
         <section id="features">
           <FeaturesSection />

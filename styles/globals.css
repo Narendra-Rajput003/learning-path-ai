@@ -1,0 +1,26 @@
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.react-flow__node {
+  transition: all 0.3s ease;
+}
+
+.react-flow__node:hover {
+  transform: scale(1.05);
+}
+
+.react-flow__edge {
+  transition: all 0.3s ease;
+}
+
+.react-flow__edge:hover {
+  stroke-width: 3;
+}

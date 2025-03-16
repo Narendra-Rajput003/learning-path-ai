@@ -62,17 +62,6 @@ export default function Navbar() {
           <div className="mt-auto p-6 border-t border-white/10">
             {isLoaded && user ? (
               <div className="flex flex-col space-y-4">
-                <Button 
-                  variant="ghost" 
-                  className="w-full justify-start text-white hover:text-purple-400"
-                  onClick={() => {
-                    router.push("/dashboard")
-                    setIsOpen(false)
-                  }}
-                >
-                  <LayoutDashboard className="w-5 h-5 mr-2" />
-                  Dashboard
-                </Button>
                 <UserButton afterSignOutUrl="/" />
               </div>
             ) : (
@@ -129,14 +118,6 @@ export default function Navbar() {
       <div className="hidden md:flex items-center space-x-4">
         {isLoaded && user ? (
           <div className="flex items-center space-x-4">
-            <Button 
-              variant="ghost" 
-              className="text-white hover:text-purple-400"
-              onClick={() => router.push("/dashboard")}
-            >
-              <LayoutDashboard className="w-5 h-5 mr-2" />
-              Dashboard
-            </Button>
             <UserButton afterSignOutUrl="/" />
           </div>
         ) : (

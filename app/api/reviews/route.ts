@@ -26,6 +26,14 @@ export async function POST(req: Request) {
       );
     }
 
+    // Validate comment
+    if (!comment || comment.length < 10) {
+      return NextResponse.json(
+        { error: 'Comment must be at least 10 characters long' },
+        { status: 400 }
+      );
+    }
+
     // Create review with user details from Clerk
     const review = await Review.create({
       user: userId,
@@ -58,53 +66,26 @@ export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '6');
-    const roadmapTitle = searchParams.get('roadmapTitle');
     const skip = (page - 1) * limit;
 
-    // Build query
-    const query = roadmapTitle ? { roadmapTitle } : {};
-
-    const reviews = await Review.find(query)
+    const reviews = await Review.find()
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
-      .select('rating comment userName userImage roadmapTitle createdAt');
+      .select('rating comment userName userImage createdAt'); // Removed roadmapTitle
 
-    const total = await Review.countDocuments(query);
-
-    // Calculate average rating if roadmapTitle is provided
-    let averageRating = null;
-    if (roadmapTitle) {
-      const ratingStats = await Review.aggregate([
-        { $match: { roadmapTitle } },
-        { 
-          $group: {
-            _id: null,
-            average: { $avg: '$rating' },
-            count: { $sum: 1 }
-          }
-        }
-      ]);
-      if (ratingStats.length > 0) {
-        averageRating = {
-          average: Math.round(ratingStats[0].average * 10) / 10,
-          count: ratingStats[0].count
-        };
-      }
-    }
+    const total = await Review.countDocuments();
 
     return NextResponse.json({
       success: true,
       data: reviews,
-      averageRating,
       pagination: {
         current: page,
         total: Math.ceil(total / limit),
         hasMore: skip + reviews.length < total,
-      },
+      }
     });
   } catch (error) {
-    console.error('Review fetch error:', error);
     return NextResponse.json(
       { error: 'Failed to fetch reviews' },
       { status: 500 }

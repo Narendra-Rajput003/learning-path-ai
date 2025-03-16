@@ -4,8 +4,16 @@ import { useEffect, useRef, useState } from 'react';
 import { motion, useAnimationFrame } from 'framer-motion';
 import { Star } from 'lucide-react';
 import { Card } from "@/components/ui/card";
-import { reviewsApi, Review } from '@/lib/api/reviews';
 import { useToast } from '@/hooks/use-toast';
+
+interface Review {
+  _id: string;
+  userName: string;
+  userImage: string;
+  rating: number;
+  comment: string;
+  createdAt: string;
+}
 
 export function TestimonialsSection() {
   const [reviews, setReviews] = useState<Review[]>([]);
@@ -13,15 +21,18 @@ export function TestimonialsSection() {
   const { toast } = useToast();
   const containerRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef(0);
-  const speedRef = useRef(0.5); // Controls scroll speed
+  const speedRef = useRef(0.5);
 
   useEffect(() => {
     const fetchReviews = async () => {
       try {
         setIsLoading(true);
-        const response = await reviewsApi.getAll({ limit: 10 });
-        if (response.success) {
-          setReviews([...response.data, ...response.data]); // Duplicate for infinite scroll
+        const response = await fetch('/api/reviews?limit=10');
+        const data = await response.json();
+        
+        if (data.success) {
+          // Don't duplicate the reviews
+          setReviews(data.data);
         }
       } catch (error) {
         toast({
@@ -37,13 +48,12 @@ export function TestimonialsSection() {
     fetchReviews();
   }, [toast]);
 
-  useAnimationFrame((time) => {
-    if (!containerRef.current) return;
+  useAnimationFrame(() => {
+    if (!containerRef.current || reviews.length === 0) return;
 
     scrollRef.current += speedRef.current;
     const container = containerRef.current;
     
-    // Reset position when reaching end to create infinite loop
     if (scrollRef.current >= container.scrollWidth / 2) {
       scrollRef.current = 0;
     }
@@ -51,18 +61,15 @@ export function TestimonialsSection() {
     container.scrollLeft = scrollRef.current;
   });
 
-  // Handle hover effects
-  const handleMouseEnter = () => {
-    speedRef.current = 0;
-  };
+  const handleMouseEnter = () => speedRef.current = 0;
+  const handleMouseLeave = () => speedRef.current = 0.5;
 
-  const handleMouseLeave = () => {
-    speedRef.current = 0.5;
-  };
+  if (isLoading) {
+    return <div className="py-24 text-center text-gray-400">Loading testimonials...</div>;
+  }
 
   return (
     <section className="py-24 bg-black/[0.96] antialiased bg-grid-white/[0.02] relative overflow-hidden">
-      {/* Radial gradient overlay */}
       <div className="absolute inset-0 bg-gradient-to-r from-transparent via-purple-500/10 to-transparent" />
       
       <div className="container px-4 md:px-6 relative z-10">
@@ -81,33 +88,30 @@ export function TestimonialsSection() {
           </p>
         </motion.div>
 
-        {/* Gradient Overlays */}
         <div className="absolute left-0 top-0 bottom-0 w-40 bg-gradient-to-r from-black/[0.96] to-transparent z-10" />
         <div className="absolute right-0 top-0 bottom-0 w-40 bg-gradient-to-l from-black/[0.96] to-transparent z-10" />
 
-        {/* Testimonials Carousel */}
         <div 
           ref={containerRef}
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
           className="overflow-hidden relative"
         >
-          <div className="flex gap-6 whitespace-nowrap">
+          <div className="flex gap-6">
             {reviews.map((review, index) => (
               <div
-                key={`${review.id}-${index}`}
+                key={`${review._id}-${index}`}
                 className="w-[350px] min-w-[350px] md:w-[400px] md:min-w-[400px]"
               >
-                <Card className="p-6 h-full bg-black/40 backdrop-blur-sm border border-white/10 hover:border-purple-500/50 transition-all duration-300 hover:scale-105">
+                <Card className="p-6 h-full bg-black/40 backdrop-blur-sm border border-white/10 hover:border-purple-500/50 transition-all duration-300">
                   <div className="flex items-center mb-4">
                     <img
-                      src={review.user.image}
-                      alt={review.user.name}
+                      src={review.userImage}
+                      alt={review.userName}
                       className="w-12 h-12 rounded-full mr-4"
                     />
                     <div>
-                      <h3 className="font-semibold text-white">{review.user.name}</h3>
-                      <p className="text-sm text-purple-400">{review.roadmapTitle}</p>
+                      <h3 className="font-semibold text-white">{review.userName}</h3>
                     </div>
                   </div>
                   <div className="flex mb-4">
@@ -118,7 +122,36 @@ export function TestimonialsSection() {
                       />
                     ))}
                   </div>
-                  <p className="text-gray-300 whitespace-normal">{review.comment}</p>
+                  <p className="text-gray-300 line-clamp-4">{review.comment}</p>
+                </Card>
+              </div>
+            ))}
+            {/* Second set of reviews for smooth infinite scroll */}
+            {reviews.map((review, index) => (
+              <div
+                key={`${review._id}-clone-${index}`}
+                className="w-[350px] min-w-[350px] md:w-[400px] md:min-w-[400px]"
+              >
+                <Card className="p-6 h-full bg-black/40 backdrop-blur-sm border border-white/10 hover:border-purple-500/50 transition-all duration-300">
+                  <div className="flex items-center mb-4">
+                    <img
+                      src={review.userImage}
+                      alt={review.userName}
+                      className="w-12 h-12 rounded-full mr-4"
+                    />
+                    <div>
+                      <h3 className="font-semibold text-white">{review.userName}</h3>
+                    </div>
+                  </div>
+                  <div className="flex mb-4">
+                    {Array.from({ length: review.rating }).map((_, i) => (
+                      <Star
+                        key={i}
+                        className="w-5 h-5 text-yellow-500 fill-yellow-500"
+                      />
+                    ))}
+                  </div>
+                  <p className="text-gray-300 line-clamp-4">{review.comment}</p>
                 </Card>
               </div>
             ))}
