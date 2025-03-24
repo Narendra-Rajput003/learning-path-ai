@@ -1,6 +1,5 @@
 
 
-<<<<<<< HEAD
 import RoadmapClient from './components/RoadmapClient';
 
 async function getRoadmapData(slug: string) {
@@ -19,15 +18,4 @@ async function getRoadmapData(slug: string) {
 export default async function RoadmapPage({ params }: { params: { roadmap: string } }) {
   const roadmapData = await getRoadmapData(params.roadmap);
   return <RoadmapClient data={roadmapData} />;
-=======
-
-
-
-export default function RoadmapPage() {
-  return (
-    <div>
-      <h1>Roadmap Page</h1>
-    </div>
-  );
->>>>>>> 01f64e06090104b2f09acafcb0dc23e6aee72dd8
 }

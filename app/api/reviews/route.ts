@@ -26,7 +26,6 @@ export async function POST(req: Request) {
       );
     }
 
-<<<<<<< HEAD
     // Validate comment
     if (!comment || comment.length < 10) {
       return NextResponse.json(
@@ -35,8 +34,6 @@ export async function POST(req: Request) {
       );
     }
 
-=======
->>>>>>> 01f64e06090104b2f09acafcb0dc23e6aee72dd8
     // Create review with user details from Clerk
     const review = await Review.create({
       user: userId,
@@ -79,11 +76,7 @@ export async function GET(req: Request) {
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
-<<<<<<< HEAD
       .select('rating comment userName userImage createdAt'); // Removed roadmapTitle
-=======
-      .select('rating comment userName userImage roadmapTitle createdAt');
->>>>>>> 01f64e06090104b2f09acafcb0dc23e6aee72dd8
 
     const total = await Review.countDocuments(query);
 
